@@ -1,2 +1,4 @@
 qrcode
 fastapi[standard]
+pydantic_core
+pydantic
