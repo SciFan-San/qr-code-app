@@ -1,0 +1,2 @@
+qrcode
+fastapi[standard]
