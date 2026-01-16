@@ -3,6 +3,6 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-@app.get("/")
+@app.post("/")
 async def home(user_string: str):
     return {"message": "QR String Received!"}

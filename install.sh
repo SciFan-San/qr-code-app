@@ -1,7 +1,7 @@
 #!/bin/bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 which python
-python -m ensurepip --upgrade
+python3 -m ensurepip --upgrade
 echo "*" > .venv/.gitignore
 pip install -r requirements.txt
