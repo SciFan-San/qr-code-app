@@ -1,4 +1,5 @@
-qrcode
+segno
+qrcode-artistic
 fastapi[standard]
 pydantic_core
 pydantic
