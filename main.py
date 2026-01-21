@@ -1,30 +1,28 @@
 import segno
 import json
-from pydantic import BaseModel, Field, WithJsonSchema
 from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 app = FastAPI()
 
 
-class UserInputNoWifi(BaseModel):
-    filename: str = Field(default="image")
-    encoding_string: str
+@app.get("/qr/{user_json}")
+async def home(user_json: str, scale: int = 10):
+    user_qr_info = json.loads(user_json)  # type: ignore
 
+    qr_image = segno.make_qr(
+        f"""WIFI:
+        S:{user_qr_info["ssid"]};
+        T:{user_qr_info["security_type"]};
+        P:{user_qr_info["password"]};
+        H:{user_qr_info["hidden"]};;
+        """,
+        error=user_qr_info["correction_level"]
+    )
 
-class UserInputWifi(BaseModel):
-    ssid: str
-    password: str | None
-    security: str | None
-    hidden: bool
+    qr_image_buffer = BytesIO()
+    qr_image.save(qr_image_buffer, kind="PNG", scale=scale)
+    qr_image_buffer.seek(0)
 
-
-@app.post("/")
-async def home(user_json=str):
-    user_qr_info = json.loads(user_json)
-    segno.make_qr()
-
-
-user_json = json.dump()
-
-qr = segno.make(user_json)
-qr.save(user_json.name)
+    return StreamingResponse(content=qr_image_buffer, media_type="img/png")
