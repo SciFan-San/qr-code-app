@@ -56,7 +56,7 @@ Enter your desired URL or text in the data field and click Execute.
 Optionally you cant enter WiFi information as a JSON in the following format:
 WIFI:T:<EncryptionType>;S:<SSID>;P:<Password>;H:<Hidden>;
 
-Examples of a WiFi JSON:
+**Examples of a WiFi JSON:**
 1. WPA2-protected network:
 WIFI:T:WPA;S:HomeNetwork;P:SuperSecret123;;
 2. Open network (no password):
