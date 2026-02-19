@@ -13,12 +13,12 @@ A lightweight, efficient Python application that generates custom QR codes direc
 ---
 
 ## 🛠️ Technical Stack
-[cite_start]This project reflects my focus on automation and clean backend logic:
-- [cite_start]**Primary Language:** Python 
+This project reflects my focus on automation and clean backend logic:
+- **Primary Language:** Python 
 - **Web Framework:** FastAPI
 - **QR Library:** Segno
-- [cite_start]**Scripting:** Bash (for automated installation) 
-- [cite_start]**Skills Applied:** Problem Analysis, Object-Oriented Programming, and Build Scripting 
+- **Scripting:** Bash (for automated installation) 
+- **Skills Applied:** Problem Analysis, Object-Oriented Programming, and Build Scripting 
 
 ---
 
@@ -73,11 +73,15 @@ Automation: I implemented install.sh to demonstrate some of my proficiency in Bu
 
 User-Friendliness: I chose FastAPI's /docs page, to make it easier for even non-technical users to easily interact with the API.
 
+Conrainerisation: I'm using python's build in virtual environment for some simple containerisation.
+
+End Goal: A fully working Github pages frontend running in a docker image with no need to install the code locally to receive your QR Code download.
+
 ## 📫 Contact
 
 Michael Johnston 
 
-Email: mdjohnstonb4j@gmail.com 
+Email: MDJohnston_EFC@protonmail.com 
 
 GitHub: SciFan-San 
 
