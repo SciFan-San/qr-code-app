@@ -40,7 +40,7 @@ async def generate_qr(user_json: WifiRequest, scale: int = 10):
         return StreamingResponse(
             content=image_buffer,
             media_type="image/png",
-            headers={"Content-Disposition": f"attachment; filename={user_json.file_name}.png"}
+            headers={"Content-Disposition": f"attachment; filename={user_json.file_name}"}
         )
 
     except Exception as e:
