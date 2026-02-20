@@ -1,28 +1,50 @@
 import segno
-import json
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
 from io import BytesIO
+from typing import Optional
+from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 
+
+# Instantiate FastAPI server
 app = FastAPI()
 
 
-@app.get("/qr/{user_json}")
-async def home(user_json: str, scale: int = 10):
-    user_qr_info = json.loads(user_json)  # type: ignore
+# Define data Structure for QR Codes
+class WifiRequest(BaseModel):
+    ssid: str
+    password: str
+    security_type: str = "WPA"
+    hidden: bool = False
+    correction_level: str = Field(default="L", pattern="^[LMQHlmqh]$")
+    file_name: Optional[str] = "qr_code"
 
-    qr_image = segno.make_qr(
-        f"""WIFI:
-        S:{user_qr_info["ssid"]};
-        T:{user_qr_info["security_type"]};
-        P:{user_qr_info["password"]};
-        H:{user_qr_info["hidden"]};;
-        """,
-        error=user_qr_info["correction_level"]
-    )
 
-    qr_image_buffer = BytesIO()
-    qr_image.save(qr_image_buffer, kind="PNG", scale=scale)
-    qr_image_buffer.seek(0)
+# API GET request logic, parses according to QR type
+@app.post("/qr/generate")
+async def generate_qr(user_json: WifiRequest, scale: int = 10):
+    try:
+        wifi_qr_string = f"""
+        WIFI:S:{user_json.ssid};
+        T:{user_json.security_type};
+        P:{user_json.password};
+        H:{user_json.hidden};;
+        """
 
-    return StreamingResponse(content=qr_image_buffer, media_type="img/png")
+        qr_image = segno.make_qr(wifi_qr_string, error=user_json.correction_level)  # type: ignore
+
+        image_buffer = BytesIO()
+        qr_image.save(image_buffer, kind="PNG", scale=scale)
+        image_buffer.seek(0)
+
+        return StreamingResponse(
+            content=image_buffer,
+            media_type="image/png",
+            headers={"Content-Disposition": f"attachment; filename={user_json.file_name}.png"}
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"QR Generation failed: {str(e)}"
+        )
