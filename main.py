@@ -1,16 +1,15 @@
 import segno
 from io import BytesIO
 from typing import Optional
-from pydantic import BaseModel, Field
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-
+from pydantic import BaseModel, Field, HttpUrl, ValidationError, field_validator
 
 # Instantiate FastAPI server
 app = FastAPI()
 
 
-# Define data Structure for QR Codes
+# Define data Structure for all QR Code types
 class WifiRequest(BaseModel):
     ssid: str
     password: str
@@ -18,6 +17,17 @@ class WifiRequest(BaseModel):
     hidden: bool = False
     correction_level: str = Field(default="L", pattern="^[LMQHlmqh]$")
     file_name: Optional[str] = "qr_code"
+
+
+class UrlRequest(BaseModel):
+    url: HttpUrl
+
+    @field_validator('url')
+    @classmethod
+    def check_url_safety(cls, link: HttpUrl) -> HttpUrl:
+        if link.scheme != 'https':
+            raise ValidationError("URL must use https")
+        return link
 
 
 # API GET request logic, parses according to QR type
