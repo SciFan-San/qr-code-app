@@ -1,6 +1,6 @@
 import segno
 from io import BytesIO
-from typing import Optional
+from typing import Optional, Union, Literal, List
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, HttpUrl, ValidationError, field_validator
@@ -11,6 +11,7 @@ app = FastAPI()
 
 # Define data Structure for all QR Code types
 class WifiRequest(BaseModel):
+    qr_type: Literal['wifi']
     ssid: str
     password: str
     security_type: str = "WPA"
@@ -20,6 +21,7 @@ class WifiRequest(BaseModel):
 
 
 class UrlRequest(BaseModel):
+    qr_type: Literal['url']
     url: HttpUrl
 
     @field_validator('url')
@@ -30,18 +32,32 @@ class UrlRequest(BaseModel):
         return link
 
 
+class Binary_Byte(BaseModel):
+    qr_type: Literal['binary', 'byte']
+    pass
+
+
+class Kanji_Kana(BaseModel):
+    qr_type: Literal['kanji', 'kana']
+    pass
+
+
 # API GET request logic, parses according to QR type
 @app.post("/qr/generate")
-async def generate_qr(user_json: WifiRequest, scale: int = 10):
+async def generate_qr(user_json, scale: int = 10):
     try:
-        wifi_qr_string = f"""
-        WIFI:S:{user_json.ssid};
-        T:{user_json.security_type};
-        P:{user_json.password};
-        H:{user_json.hidden};;
-        """
+        qr_string = str
+        if type(user_json) is WifiRequest:
+            qr_string = f"""
+            WIFI:S:{user_json.ssid};
+            T:{user_json.security_type};
+            P:{user_json.password};
+            H:{user_json.hidden};;
+            """
+        elif type(user_json) is HttpUrl:
+            qr_string = str(user_json)
 
-        qr_image = segno.make_qr(wifi_qr_string, error=user_json.correction_level)  # type: ignore
+        qr_image = segno.make_qr(qr_string, error=user_json.correction_level)  # type: ignore
 
         image_buffer = BytesIO()
         qr_image.save(image_buffer, kind="PNG", scale=scale)
