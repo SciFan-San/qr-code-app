@@ -1,63 +1,31 @@
 import segno
+import schemas
 from io import BytesIO
-from typing import Optional, Union, Literal, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field, HttpUrl, ValidationError, field_validator
+from typing import Union
 
 # Instantiate FastAPI server
 app = FastAPI()
 
 
-# Define data Structure for all QR Code types
-class WifiRequest(BaseModel):
-    qr_type: Literal['wifi']
-    ssid: str
-    password: str
-    security_type: str = "WPA"
-    hidden: bool = False
-    correction_level: str = Field(default="L", pattern="^[LMQHlmqh]$")
-    file_name: Optional[str] = "qr_code"
-
-
-class UrlRequest(BaseModel):
-    qr_type: Literal['url']
-    url: HttpUrl
-
-    @field_validator('url')
-    @classmethod
-    def check_url_safety(cls, link: HttpUrl) -> HttpUrl:
-        if link.scheme != 'https':
-            raise ValidationError("URL must use https")
-        return link
-
-
-class Binary_Byte(BaseModel):
-    qr_type: Literal['binary', 'byte']
-    pass
-
-
-class Kanji_Kana(BaseModel):
-    qr_type: Literal['kanji', 'kana']
-    pass
-
-
 # API GET request logic, parses according to QR type
 @app.post("/qr/generate")
-async def generate_qr(user_json, scale: int = 10):
+async def generate_qr(user_json: Union[schemas.WifiRequest, schemas.UrlRequest, schemas.Binary_Byte, schemas.Kanji_Kana] = Body(discriminator="qr_type"), scale: int = 10):
     try:
         qr_string = str
-        if type(user_json) is WifiRequest:
-            qr_string = f"""
-            WIFI:S:{user_json.ssid};
-            T:{user_json.security_type};
-            P:{user_json.password};
-            H:{user_json.hidden};;
-            """
-        elif type(user_json) is HttpUrl:
-            qr_string = str(user_json)
+        qr_image = any
 
-        qr_image = segno.make_qr(qr_string, error=user_json.correction_level)  # type: ignore
+        if type(user_json) is schemas.WifiRequest:
+            qr_string = f"WIFI:S:{user_json.ssid};T:{user_json.security_type};P:{user_json.password};H:{user_json.hidden};;"
+            qr_image = segno.make_qr(qr_string, error=user_json.correction_level)  # type: ignore
+        elif type(user_json) is schemas.UrlRequest:
+            qr_string = user_json.url
+            qr_image = segno.make_qr(qr_string)  # type: ignore
+        elif type(user_json) is schemas.Binary_Byte:
+            qr_string = user_json
+        elif type(user_json) is schemas.Kanji_Kana:
+            qr_string = user_json
 
         image_buffer = BytesIO()
         qr_image.save(image_buffer, kind="PNG", scale=scale)
