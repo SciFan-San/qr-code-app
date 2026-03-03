@@ -21,7 +21,7 @@ async def generate_qr(user_json: Union[schemas.WifiRequest, schemas.UrlRequest, 
             qr_image = segno.make_qr(qr_string, error=user_json.correction_level)  # type: ignore
         elif type(user_json) is schemas.UrlRequest:
             qr_string = user_json.url
-            qr_image = segno.make_qr(qr_string)  # type: ignore
+            qr_image = segno.make_qr(str(qr_string))  # type: ignore
         elif type(user_json) is schemas.Binary_Byte:
             qr_string = user_json
         elif type(user_json) is schemas.Kanji_Kana:

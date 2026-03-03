@@ -16,6 +16,7 @@ class WifiRequest(BaseModel):
 class UrlRequest(BaseModel):
     qr_type: Literal['url']
     url: HttpUrl
+    file_name: Optional[str] = "qr_code"
 
     @field_validator('url')
     @classmethod
